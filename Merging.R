@@ -48,17 +48,27 @@ M1<- function(x) {
 
 
 
+#parallel merging code
 cvb<-1:length(varid)
 library(snow)
-cl <- makeCluster(2)
+cl <- makeCluster(10)
 registerDoParallel(cl)
 clusterExport(cl, list=c("cvb","M1", "varid","main","df","newdf"), envir=.GlobalEnv)
+start.time <- Sys.time() #will take 13.70858 hours with 10 cores
 r<-parLapply(cl, cvb, function(y) M1(y))
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
 
-final<-as.data.frame(r)                    
 
-#final<-do.call("rbind", list(df2,df3,df4,df5))
-#Remove blank rows
-final<-final[!(final$MEMBER_ID==""),]
-              
+
+#convert list into dataframe
+for (i in 1:length(r)) {
+        df1<-as.data.frame(r[i])
+        df<-rbind(df,df1)
+}
+
+rm(main)
+#remove blank rows
+finalDF<-df[!(df$MEMBER_ID == ""),]
 
